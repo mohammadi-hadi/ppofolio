@@ -1,0 +1,71 @@
+{
+  "generated": "2026-07-12",
+  "daily_v5.1": {
+    "members": [
+      "policy_s42.zip",
+      "policy_s2026.zip"
+    ],
+    "seeds": [
+      42,
+      2026
+    ],
+    "timesteps_per_seed": 800000,
+    "algo": "PPO MlpPolicy [256,256]",
+    "train_code_sha": "d343b72",
+    "config": "configs/full.yaml",
+    "config_sha": "9cb511d87034",
+    "data_range": "2020-08-11..2026-07-11 daily, on-chain stale after 2026-04-19",
+    "splits": {
+      "train": "2021-08-01..2025-08-31",
+      "val": "2025-10-01..2026-01-31",
+      "test": "2026-02-15..2026-07-10 (touched once)"
+    },
+    "val_metrics": {
+      "ensemble_return": 0.1696,
+      "ensemble_sharpe": 1.161,
+      "max_dd": -0.1388,
+      "bh_hold_return": -0.4322,
+      "macd_return": -0.309,
+      "dropped_seed_7": "val sharpe -0.65 failed screen"
+    },
+    "test_metrics_raw_policy": {
+      "return": -0.1242,
+      "sharpe": -0.795,
+      "max_dd": -0.306,
+      "bh_hold_return": -0.0825,
+      "macd_return": -0.0065
+    },
+    "test_metrics_system_48h_auto_resume": {
+      "return": -0.1666,
+      "n_halts": 4
+    },
+    "gate_verdict": "FAILED absolute gate vs buy-and-hold on held-out test; beats incumbent on every window; deployed for FORWARD PAPER EVALUATION ONLY \u2014 not qualified for real money",
+    "incumbent_comparison": {
+      "incumbent_val_return": -0.0406,
+      "incumbent_test_return_raw": -0.1451
+    }
+  },
+  "daily_v5.2": {
+    "status": "REJECTED AT VAL SCREEN 2026-07-18 — incumbent v5.1 retained",
+    "recipe": "3 PPO seeds (42/7/2026), 800k steps, configs/full.yaml + reward turnover penalty; dataset rebuilt 2026-07-18 (ohlcv through 07-17; on-chain cache real through 04-19, FeeMeanUSD dropped from CoinMetrics community tier 2026-07)",
+    "val_2025-10-01_2026-01-31": {
+      "turnover_0.002": {"s42": -0.0693, "s7": -0.1008, "s2026": -0.2517, "ensemble": -0.171},
+      "turnover_0.001": {"s42": 0.0692, "s7": -0.1533, "s2026": -0.231, "ensemble": -0.0914},
+      "incumbent_v5.1_ensemble_same_data": {"return": 0.1662, "sharpe": 1.139, "max_dd": -0.1388}
+    },
+    "conclusion": "turnover-penalized retrains fail the val screen at both 0.002 and 0.001; per EVAL_PROTOCOL.md no gate touch, no deploy. Candidate zips kept local in models/candidate/ (t002 subdir = first batch). Val window reused twice for this selection — weigh further reuse carefully.",
+    "reports": ["reports/eval_val_v52.csv", "reports/eval_val_v52b.csv", "reports/eval_val_v51_freshdata.csv"]
+  },
+  "hourly_v6": {
+    "status": "DECOMMISSIONED 2026-07-12 \u2014 no qualified model",
+    "evidence_val_window_2025-10-01_2026-01-31": {
+      "bh_hold_return": -0.3484,
+      "old_v6.1_test": "negative in all regimes (reports/backtest.csv Apr 20)",
+      "sweep_turnover_0.001": -0.5832,
+      "sweep_turnover_0.002": -0.6043,
+      "sweep_turnover_0.005": -0.2967,
+      "gamma_0.9996_horizon_720_probe": -0.447
+    },
+    "conclusion": "five configurations of hourly long/short PPO all fail to beat buy-and-hold on validation; per the pre-agreed gate the service is halted flat with reason no-qualified-model. Incumbent policy_h*.zip files kept in repo for the record only."
+  }
+}

@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "ppofolio: PPO ensemble for multi-asset crypto portfolio allocation"
+authors:
+  - family-names: Mohammadi
+    given-names: Hadi
+    orcid: "https://orcid.org/0000-0003-0860-9200"
+    affiliation: "Utrecht University"
+version: 0.1.0
+date-released: 2026-08-07
+license: MIT
+repository-code: "https://github.com/mohammadi-hadi/ppofolio"
+keywords:
+  - reinforcement learning
+  - ppo
+  - cryptocurrency
+  - trading
+  - portfolio allocation
+  - stable-baselines3
+  - gymnasium
+abstract: >-
+  A PPO seed-ensemble that allocates a portfolio across BTC, ETH and SOL from
+  technical, on-chain and macro features, with a Gymnasium trading
+  environment, multi-objective reward, walk-forward backtesting against
+  rule-based baselines, a pre-registered evaluation protocol with burned
+  held-out test windows, and a paper-trading loop guarded by a volatility
+  circuit breaker, kill switch and hard risk limits.
