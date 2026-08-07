@@ -1,0 +1,98 @@
+assets:
+  - symbol: BTC/USDT
+    coinmetrics: btc
+    slippage_std: 0.0005
+  - symbol: ETH/USDT
+    coinmetrics: eth
+    slippage_std: 0.0005
+  - symbol: SOL/USDT
+    coinmetrics: sol
+    slippage_std: 0.0012
+
+exchange: binance
+timeframe: 1d
+lookback_days: 30
+initial_cash: 1_000_000
+fee_bps: 10
+model_prefix: policy_s          # v5 daily ensemble trains/loads policy_s*.zip
+
+data_paths:
+  ohlcv: data/ohlcv
+  onchain: data/onchain
+  news: data/news
+  processed: data/processed/dataset.parquet
+
+features:
+  technical: [ret_1d, log_vol_7d, rsi_14, macd, bb_pct, atr_14, ret_60d, ret_180d, vol_20d, ma200_dist]
+  onchain: [active_addresses, tx_count, mean_fee_usd]
+  sentiment: [sent_mean, sent_count]
+  macro: [fng, btc_dominance, funding_rate]
+
+reward:
+  weights:
+    return:      1.0
+    sharpe:      0.3
+    drawdown:    0.5
+    liquidity:   0.1
+    sentiment:   0.1
+    loss_asymm:  0.5     # NEW: quadratic penalty only on negative returns
+    turnover:    0.002   # v5.2 — traded notional/equity (≈2x fee drag), same
+                         # rationale as hourly v6.2; discourages churn like the
+                         # 2-day SOL round trip seen live 2026-07-15..17
+  sharpe_window: 30
+  liquidity_threshold_pct: 0.01
+
+action:
+  allow_short: false
+  max_leverage: 1.0
+  rebalance_threshold: 0.02
+
+kill_switch:
+  enabled: true
+  auto_resume_hours: 48   # flash-crash halt auto-clears after cooldown; peak re-bases
+  max_daily_loss: 0.08    # matches base.yaml 2026-07-18 (spurious -5% halts, see reports)
+  max_drawdown_peak: 0.15
+  resume_requires_recovery: true
+  recovery_ma_bars: 10
+
+invest_limits:
+  max_single_position: 0.40
+  max_gross_exposure:  1.00
+  max_portfolio_usd:   1000000
+  max_trade_notional:  50000
+  min_trade_notional:  10
+
+train:
+  algo: ppo
+  total_timesteps: 800_000        # per-seed; ensemble of 3 = 2.4M effective
+  n_envs: 6
+  seed: 42
+  bear_sample_prob: 0.40          # 40% of episodes start in historical bear windows
+  episode_horizon_bars: 180       # ~6 months per episode; horizon is now enforced
+  policy_kwargs:
+    net_arch: [256, 256]
+  learning_rate: 0.0003
+  gamma: 0.99
+  gae_lambda: 0.95
+  ent_coef: 0.01
+
+# Chronological with embargoes: train | 1mo gap | val (selection only) | 2wk gap | test.
+# Test is touched once per final candidate; regimes are reporting sub-windows of it.
+splits:
+  train:
+    start: 2021-08-01        # need 180d for ret_180d + 200d for ma200 warmup
+    end:   2025-08-31
+  val:
+    start: 2025-10-01
+    end:   2026-01-31
+  test_regimes:
+    full_test:  [2026-02-15, 2026-07-10]
+    pre_crash:  [2026-02-15, 2026-05-24]
+    crash:      [2026-05-25, 2026-06-20]
+    post_crash: [2026-06-21, 2026-07-10]
+
+news:
+  enabled: false
+  provider: gnews
+  queries: ["bitcoin", "ethereum", "solana"]
+  max_per_day: 30

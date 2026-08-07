@@ -1,0 +1,119 @@
+assets:
+  - symbol: BTC/USDT
+    coinmetrics: btc
+    slippage_std: 0.0005   # 5 bps
+  - symbol: ETH/USDT
+    coinmetrics: eth
+    slippage_std: 0.0005
+  - symbol: SOL/USDT
+    coinmetrics: sol
+    slippage_std: 0.0012   # 12 bps
+
+exchange: binance
+timeframe: 1d
+lookback_days: 30
+initial_cash: 1_000_000
+fee_bps: 10
+model_prefix: policy_s              # v5 daily ensemble loads from policy_s*.zip
+
+data_paths:
+  ohlcv: data/ohlcv
+  onchain: data/onchain
+  news: data/news
+  processed: data/processed/dataset.parquet
+
+features:
+  technical: [ret_1d, log_vol_7d, rsi_14, macd, bb_pct, atr_14, ret_60d, ret_180d, vol_20d, ma200_dist]
+  onchain: [active_addresses, tx_count, mean_fee_usd]
+  sentiment: [sent_mean, sent_count]
+  macro: [fng, btc_dominance, funding_rate]
+
+reward:
+  weights:
+    return:      1.0
+    sharpe:      0.3
+    drawdown:    0.5
+    liquidity:   0.1
+    sentiment:   0.1
+    loss_asymm:  0.5
+  sharpe_window: 30
+  liquidity_threshold_pct: 0.01   # 1% of daily volume
+
+action:
+  allow_short: false
+  max_leverage: 1.0
+  rebalance_threshold: 0.02       # skip trades < 2% weight change
+  target_smoothing: 0.0           # EMA blend toward current weights. Tested on val
+                                  # 2026-07-18: 0.3 -> +10.6% vs 0.0 -> +16.5%. Keep 0.
+
+ensemble:
+  disagreement_scaling:
+    enabled: false                # scale exposure down when members disagree. Tested on
+    k: 2.0                        # val 2026-07-18: +12.8% vs +16.5% plain. Keep off;
+    floor: 0.25                   # revisit with a >=3-member ensemble.
+
+kill_switch:
+  enabled: true
+  auto_resume_hours: 48   # flash-crash halt auto-clears after cooldown; peak re-bases
+  max_daily_loss: 0.08            # -8% day over day -> halt. Was 0.05: routine crypto
+                                  # -5% days fired 2 spurious halts on val costing 13.5pts
+                                  # (system_abval_* reports); -8% is genuine flash-crash scale.
+  max_drawdown_peak: 0.15         # -15% from all-time peak -> halt
+  resume_requires_recovery: true  # after cooldown, resume only once the equal-weight
+  recovery_ma_bars: 10            # basket is back above its 10-day mean — the pure timer
+                                  # re-bought falling markets (test: 4 halts, -4.3pts).
+
+invest_limits:
+  # Hard safety caps. Applied AFTER the model + circuit-breaker,
+  # BEFORE the broker executes.
+  max_single_position: 0.40       # at most 40% of equity in any one asset
+  max_gross_exposure:  1.00       # sum of |weights| ≤ 100% (no leverage)
+  max_portfolio_usd:   1000000    # if equity grows past this, weights scale down
+  max_trade_notional:  250000     # per-trade cap. 50k starved execution: the policy
+                                  # was trained/selected with no cap and swings 0->100%;
+                                  # at 50k the val A/B scores -8.1% vs +11.3% at 250k
+                                  # (EVAL_PROTOCOL.md, notional-cap sweep 2026-08-07)
+  min_trade_notional:  2000       # ignore dust trades (was 10; sub-$2k legs are noise)
+
+train:
+  algo: ppo
+  total_timesteps: 1_500_000
+  n_envs: 4
+  seed: 42
+  policy_kwargs:
+    net_arch: [256, 256]
+  learning_rate: 0.0003
+  gamma: 0.99
+  gae_lambda: 0.95
+  ent_coef: 0.01
+
+splits:
+  train:
+    start: 2021-08-01
+    end:   2025-08-31
+  val:
+    start: 2025-10-01
+    end:   2026-01-31
+  test_regimes:
+    full_test:  [2026-02-15, 2026-07-10]
+    pre_crash:  [2026-02-15, 2026-05-24]
+    crash:      [2026-05-25, 2026-06-20]
+    post_crash: [2026-06-21, 2026-07-10]
+
+news:
+  # Disabled: the deployed policy was trained with sentiment=0, so non-zero
+  # sentiment at inference time is a distribution shift. Re-enable only after
+  # retraining the model with news on.
+  enabled: false
+  provider: gnews
+  queries: ["bitcoin", "ethereum", "solana"]
+  max_per_day: 30
+
+signal_watch:
+  # Rule-based buy/sell signals (200d MA + MACD + RSI): daily check at 00:20 UTC,
+  # Telegram alert only when an asset's signal changes. See ppofolio/signals/watch.py.
+  enabled: true
+  assets:
+    - {name: Gold,    symbol: PAXG/USDT, source: binance}
+    - {name: Silver,  symbol: SI=F,      source: yahoo}
+    - {name: Bitcoin, symbol: BTC/USDT,  source: binance}

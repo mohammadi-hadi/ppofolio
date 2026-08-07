@@ -1,0 +1,73 @@
+assets:
+  - symbol: BTC/USDT
+    coinmetrics: btc
+    slippage_std: 0.0005
+  - symbol: ETH/USDT
+    coinmetrics: eth
+    slippage_std: 0.0005
+  - symbol: SOL/USDT
+    coinmetrics: sol
+    slippage_std: 0.0012
+
+exchange: binance
+timeframe: 1d
+lookback_days: 30
+initial_cash: 1_000_000
+fee_bps: 10
+model_prefix: policy_s
+
+data_paths:
+  ohlcv: data/ohlcv
+  onchain: data/onchain
+  news: data/news
+  processed: data/processed/dataset.parquet
+
+features:
+  technical: [ret_1d, log_vol_7d, rsi_14, macd, bb_pct, atr_14, ret_60d, ret_180d, vol_20d, ma200_dist]
+  onchain: [active_addresses, tx_count, mean_fee_usd]
+  sentiment: [sent_mean, sent_count]
+  macro: [fng, btc_dominance, funding_rate]
+
+reward:
+  weights:
+    return:    1.0
+    sharpe:    0.3
+    drawdown:  0.5
+    liquidity: 0.1
+    sentiment: 0.1
+  sharpe_window: 30
+  liquidity_threshold_pct: 0.01
+
+action:
+  allow_short: false
+  max_leverage: 1.0
+  rebalance_threshold: 0.02
+
+train:
+  algo: ppo
+  total_timesteps: 100_000       # SMOKE: 1.5M for real runs
+  n_envs: 2
+  seed: 42
+  policy_kwargs:
+    net_arch: [128, 128]         # SMOKE: [256,256] for real
+  learning_rate: 0.0003
+  gamma: 0.99
+  gae_lambda: 0.95
+  ent_coef: 0.01
+
+splits:
+  train:
+    start: 2021-02-01
+    end:   2024-06-30
+  val:
+    start: 2024-07-01
+    end:   2024-12-31
+  test_regimes:
+    bear:     [2025-01-26, 2025-02-27]
+    sideways: [2025-03-10, 2025-03-31]
+
+news:
+  enabled: false
+  provider: gnews
+  queries: ["bitcoin", "ethereum", "solana"]
+  max_per_day: 30
