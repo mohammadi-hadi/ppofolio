@@ -1,0 +1,29 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: install
+        run: pip install -e ".[dev]" --extra-index-url https://download.pytorch.org/whl/cpu
+      - name: lint
+        run: ruff check .
+      - name: tests
+        run: pytest -q
+      - name: import smoke
+        run: python -c "import ppofolio; from ppofolio.env.crypto_trading_env import CryptoTradingEnv"
