@@ -1,9 +1,16 @@
+<div align="center">
+
 # ppofolio
 
 [![tests](https://github.com/mohammadi-hadi/ppofolio/actions/workflows/test.yml/badge.svg)](https://github.com/mohammadi-hadi/ppofolio/actions/workflows/test.yml)
 [![PyPI](https://img.shields.io/pypi/v/ppofolio)](https://pypi.org/project/ppofolio/)
-[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21837720.svg)](https://doi.org/10.5281/zenodo.21837720)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+*PPO ensemble for multi-asset crypto portfolio allocation with pre-registered evaluation.*
+
+</div>
 
 A PPO seed-ensemble that allocates a portfolio across BTC, ETH and SOL from technical,
 on-chain and macro features. Classical deep RL (Stable-Baselines3, not LLM-based),
