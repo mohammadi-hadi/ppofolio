@@ -6,7 +6,7 @@
 [![PyPI](https://img.shields.io/pypi/v/ppofolio)](https://pypi.org/project/ppofolio/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21837720.svg)](https://doi.org/10.5281/zenodo.21837720)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
-[![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![license](https://img.shields.io/badge/license-MIT-blue)](https://github.com/mohammadi-hadi/ppofolio/blob/main/LICENSE)
 
 *PPO ensemble for multi-asset crypto portfolio allocation with pre-registered evaluation.*
 
@@ -21,13 +21,13 @@ first public version.
 What makes it different from the average "RL trading bot" repo is the evaluation
 discipline, not the model:
 
-- a **pre-registered evaluation protocol** ([EVAL_PROTOCOL.md](EVAL_PROTOCOL.md)) written
+- a **pre-registered evaluation protocol** ([EVAL_PROTOCOL.md](https://github.com/mohammadi-hadi/ppofolio/blob/main/EVAL_PROTOCOL.md)) written
   before results exist, with decision rules fixed in advance,
 - **burned held-out test windows** — each is touched once per candidate generation,
   then never used for selection again,
 - **honest baselines** (buy-and-hold, rebalanced B&H, MACD, risk parity, 200-day
   trend filter) evaluated on every window,
-- a **model manifest** ([models/MANIFEST.json](models/MANIFEST.json)) recording every
+- a **model manifest** ([models/MANIFEST.json](https://github.com/mohammadi-hadi/ppofolio/blob/main/models/MANIFEST.json)) recording every
   candidate's verdict — including the failures.
 
 ## Honest results
@@ -125,8 +125,8 @@ using it to trade real money would be a bad idea.
 }
 ```
 
-See [CITATION.cff](CITATION.cff).
+See [CITATION.cff](https://github.com/mohammadi-hadi/ppofolio/blob/main/CITATION.cff).
 
 ## License
 
-[MIT](LICENSE) © 2026 Hadi Mohammadi
+[MIT](https://github.com/mohammadi-hadi/ppofolio/blob/main/LICENSE) © 2026 Hadi Mohammadi
