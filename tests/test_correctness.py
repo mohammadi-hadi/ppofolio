@@ -199,9 +199,8 @@ def test_gold_signal_states():
         assert k in sig
 
 
-def test_broker_rejects_non_finite():
-    import tempfile
-    broker = PaperBroker(tempfile.mktemp(), assets=["BTC"], initial_cash=1_000_000,
+def test_broker_rejects_non_finite(tmp_path):
+    broker = PaperBroker(str(tmp_path / "broker.json"), assets=["BTC"], initial_cash=1_000_000,
                          fee_bps=0, slippage_std=[0.0])
     with pytest.raises(ValueError):
         broker.rebalance(np.array([np.nan]), np.array([100.0]))
