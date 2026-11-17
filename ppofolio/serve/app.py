@@ -261,7 +261,7 @@ def benchmark():
         return {"curve": [dedup[k] for k in sorted(dedup)]}
     except Exception as e:  # noqa: BLE001
         log.warning("benchmark failed: %s", e)
-        return {"curve": [], "error": str(e)}
+        return {"curve": [], "error": "benchmark failed; see the service log"}
 
 
 @app.get("/halt-status")
@@ -323,7 +323,7 @@ def run_now(x_admin_token: str | None = Header(default=None)):
         return {"ok": "error" not in result, "result": result}
     except Exception as e:  # noqa: BLE001
         log.exception("run-now failed: %s", e)
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": "run failed; see the service log"}
     finally:
         RUN_LOCK.release()
 

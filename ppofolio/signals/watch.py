@@ -207,7 +207,7 @@ def check_all(cfg: dict, broker) -> list[dict]:
     for a in assets:
         try:
             out.append(check_asset(a, cfg, broker))
-        except Exception as e:  # noqa: BLE001
+        except Exception:  # noqa: BLE001
             log.exception("signal check failed for %s", a.get("name"))
-            out.append({"ok": False, "asset": a.get("name"), "error": str(e)})
+            out.append({"ok": False, "asset": a.get("name"), "error": "signal check failed; see the service log"})
     return out
